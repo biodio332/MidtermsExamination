@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Google Contacts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #2c6e49;
+            --secondary-color: #4c956c;
+            --accent-color: #fefee3;
+            --text-color: #333;
+            --error-color: #d62828;
+            --border-radius: 6px;
+            --box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            margin: auto;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+        
+        tr:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .logout-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-logout {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background-color: #b52222;
+        }
+        
+        .btn-add {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .btn-add:before {
+            content: "+";
+            margin-right: 5px;
+        }
+        
+        .btn-add:hover {
+            background-color: #3d7a57;
+        }
+        
+        .actions a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .actions a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        li {
+            padding: 3px 0;
+        }
+        
+        .email-icon:before {
+            content: "✉️ ";
+        }
+        
+        .phone-icon:before {
+            content: "📱 ";
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logout-container">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-logout">Logout</button>
+        </form>
+    </div>
+
+    <h2>Your Google Contacts</h2>
+    <button class="btn btn-add" onclick="window.location.href='/contacts/add'">Add Contact</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Emails</th>
+                <th>Phone Numbers</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="contact : ${contacts}">
+                <td th:text="${contact.name ?: 'Unknown'}"></td>
+                <td>
+                    <ul>
+                        <li th:each="email : ${contact.emails}" class="email-icon" th:text="${email ?: 'No Email'}"></li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li th:each="phone : ${contact.phoneNumbers}" class="phone-icon" th:text="${phone ?: 'No Phone'}"></li>
+                    </ul>
+                </td>
+                <td class="actions" th:if="${contact.resourceName}">
+                    <a th:href="@{/contacts/edit(id=${#uris.escapeQueryParam(contact.resourceName)})}">Edit</a> |
+                    <a th:href="@{/contacts/delete(id=${contact.resourceName})}" onclick="return confirm('Are you sure you want to delete this contact?')">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Contact</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #2c6e49;
+            --secondary-color: #4c956c;
+            --accent-color: #fefee3;
+            --text-color: #333;
+            --error-color: #d62828;
+            --border-radius: 6px;
+            --box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(76, 149, 108, 0.2);
+        }
+        
+        .field-container {
+            margin-bottom: 20px;
+        }
+        
+        .field-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .field-row input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1e5837;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #3d7a57;
+        }
+        
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .btn-danger:hover {
+            background-color: #b52222;
+        }
+        
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn-add:before {
+            content: "+";
+            margin-right: 5px;
+        }
+        
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .btn-back:before {
+            content: "←";
+            margin-right: 5px;
+        }
+        
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+    </style>
+    <script>
+        function addField(containerId, inputName) {
+            let container = document.getElementById(containerId);
+            let fieldRow = document.createElement("div");
+            fieldRow.className = "field-row";
+            
+            let newInput = document.createElement("input");
+            newInput.type = inputName === "emails" ? "email" : "tel";
+            newInput.name = inputName;
+            newInput.required = true;
+            
+            let removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "btn btn-danger";
+            removeBtn.textContent = "Remove";
+            removeBtn.onclick = function() {
+                container.removeChild(fieldRow);
+            };
+            
+            fieldRow.appendChild(newInput);
+            fieldRow.appendChild(removeBtn);
+            container.appendChild(fieldRow);
+        }
+        
+        function removeField(element) {
+            let fieldRow = element.parentNode;
+            let container = fieldRow.parentNode;
+            container.removeChild(fieldRow);
+        }
+    </script>
+</head>
+<body>
+
+<h2>Edit Contact</h2>
+
+<th:block th:if="${contact.resourceName}">
+    <form th:action="@{/contacts/edit}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input type="hidden" name="id" th:value="${#uris.escapePath(contact.resourceName)}" />
+        <input type="hidden" name="etag" th:value="${contact.etag}" />
+
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" th:value="${contact.name}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Emails:</label>
+            <div id="email-container" class="field-container">
+                <th:block th:each="email : ${contact.emails}">
+                    <div class="field-row">
+                        <input type="email" name="emails" th:value="${email}" required>
+                        <button type="button" class="btn btn-danger" onclick="removeField(this)">Remove</button>
+                    </div>
+                </th:block>
+            </div>
+            <button type="button" class="btn btn-secondary btn-add" onclick="addField('email-container', 'emails')">Add Email</button>
+        </div>
+
+        <div class="form-group">
+            <label>Phone Numbers:</label>
+            <div id="phone-container" class="field-container">
+                <th:block th:each="phone : ${contact.phoneNumbers}">
+                    <div class="field-row">
+                        <input type="tel" name="phoneNumbers" th:value="${phone}" required>
+                        <button type="button" class="btn btn-danger" onclick="removeField(this)">Remove</button>
+                    </div>
+                </th:block>
+            </div>
+            <button type="button" class="btn btn-secondary btn-add" onclick="addField('phone-container', 'phoneNumbers')">Add Phone</button>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn btn-back" onclick="window.location.href='/contacts'">Back to Contacts</button>
+            <button type="submit" class="btn btn-primary" onclick="return confirm('Save changes?')">Update Contact</button>
+        </div>
+    </form>
+</th:block>
+
+</body>
+</html>
